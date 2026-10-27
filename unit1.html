@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>女巫的毒药</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', 'Chalkboard SE', 'PingFang SC', sans-serif; }
+    body { background: linear-gradient(135deg, #1d0c33, #4b1248); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 15px; color: #fff; }
+    header { text-align: center; margin-bottom: 12px; }
+    h1 { font-size: 1.8rem; text-shadow: 0 4px 10px rgba(0,0,0,0.6); color: #fbc531; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    p.subtitle { font-size: 0.85rem; color: #dcdde1; margin-top: 4px; }
+    .controls { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); padding: 12px 15px; border-radius: 16px; width: 100%; max-width: 900px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.15); }
+    .control-group { display: flex; align-items: center; gap: 8px; }
+    label { font-size: 0.9rem; font-weight: bold; color: #f5f6fa; white-space: nowrap; }
+    select { background: #2f3640; color: #fff; border: 1px solid #487eb0; padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; outline: none; }
+    .btn { background: #e1b12c; color: #2f3640; border: none; padding: 8px 14px; font-size: 0.85rem; font-weight: bold; border-radius: 20px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .btn:hover { background: #fbc531; transform: translateY(-2px); }
+    .btn-purple { background: #9c88ff; color: #fff; }
+    .btn-blue { background: #00a8ff; color: #fff; }
+    /* 响应式网格布局：电脑大屏5列，手机屏自动适应 */
+    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; width: 100%; max-width: 900px; perspective: 1000px; }
+    /* 手机等窄屏幕适配 */
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    }
+    .card { background: #351b4d; border: 2.5px solid #e1b12c; border-radius: 14px; height: 95px; display: flex; justify-content: center; align-items: center; cursor: pointer; text-align: center; position: relative; transition: transform 0.5s; transform-style: preserve-3d; box-shadow: 0 6px 15px rgba(0,0,0,0.4); }
+    .card.flipped { transform: rotateY(180deg); cursor: default; }
+    /* 卡片编号角标 */
+    .card-number { position: absolute; top: 4px; left: 6px; background: rgba(251, 197, 49, 0.95); color: #1e0c33; font-size: 0.75rem; font-weight: 900; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2; }
+    .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px; padding: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+    /* 核心修复：强制单词不折行，根据卡片宽度自适应缩放 */
+    .card-front { 
+      background: linear-gradient(145deg, #482163, #25103a); 
+      color: #f5f6fa; 
+      font-size: clamp(0.85rem, 2.5vw, 1.1rem); /* 动态字号，防止溢出 */
+      font-weight: bold; 
+      white-space: nowrap; /* 绝对禁止单词换行 */
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+    .card-back { transform: rotateY(180deg); }
+    .card-back.safe { background: linear-gradient(145deg, #2ed573, #26af5f); color: white; }
+    .card-back.poison { background: linear-gradient(145deg, #ff4757, #ff6b81); color: white; animation: shake 0.5s; }
+    .status-title { font-size: 1.1rem; font-weight: 900; margin-top: 2px; }
+    .status-badge { font-size: 0.7rem; opacity: 0.9; margin-top: 2px; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 8px; white-space: nowrap; }
+    @keyframes shake { 0%, 100% { transform: rotateY(180deg) translateX(0); } 20%, 60% { transform: rotateY(180deg) translateX(-6px); } 40%, 80% { transform: rotateY(180deg) translateX(6px); } }
+    /* 弹窗样式 */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .modal-content { background: #2f3640; padding: 20px; border-radius: 16px; width: 90%; max-width: 480px; color: white; border: 1px solid rgba(255,255,255,0.2); }
+    .modal-content h3 { color: #fbc531; margin-bottom: 10px; font-size: 1.1rem; }
+    textarea { width: 100%; height: 120px; margin: 10px 0; padding: 10px; border-radius: 8px; border: 1px solid #487eb0; background: #1e272e; color: #fff; font-size: 0.9rem; outline: none; }
+    .poison-selector { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 12px 0; }
+    .poison-btn { background: #351b4d; border: 2px solid #e1b12c; color: #fff; padding: 8px 4px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+    .poison-btn.selected { background: #ff4757; border-color: #ff6b81; }
+    .flex-end { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧙‍♀️ 女巫的毒药 🧪</h1>
+    <p class="subtitle">看谁能避开毒药！</p>
+  </header>
+  <div class="controls">
+    <div class="control-group">
+      <label>毒药：</label>
+      <select id="poisonCount" onchange="resetGame()">
+        <option value="1">1 个</option>
+        <option value="2">2 个</option>
+        <option value="3">3 个</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <button class="btn btn-purple" onclick="openSetPoisonModal()"> 暗号埋毒</button>
+      <button class="btn btn-blue" onclick="openWordModal()">✏️ 换单词</button>
+      <button class="btn" onclick="resetGame()"> 洗牌</button>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <!-- 编辑单词弹窗 -->
+  <div class="modal" id="wordModal">
+    <div class="modal-content">
+      <h3>✏️ 编辑 15 个单词/短语</h3>
+      <p style="font-size:0.8rem; color:#aaa;">用换行隔开，按顺序对应 1-15 号卡片：</p>
+      <textarea id="wordInput"></textarea>
+      <div class="flex-end">
+        <button class="btn" onclick="saveWords()">保存重置</button>
+        <button class="btn" style="background:#718093" onclick="closeModal('wordModal')">取消</button>
+      </div>
+    </div>
+  </div>
+  <!-- 指定毒药位置弹窗 -->
+  <div class="modal" id="poisonModal">
+    <div class="modal-content">
+      <h3> 选择毒药序号：</h3>
+      <div class="poison-selector" id="poisonSelector"></div>
+      <div class="flex-end">
+        <button class="btn" onclick="confirmCustomPoison()">确定埋毒</button>
+        <button class="btn" style="background:#718093" onclick="closeModal('poisonModal')">取消</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let defaultWords = [
+      "short", "圆形的", "long", "new", "亲切的",
+      "叔叔", "look like", "认为", "nice", "year",
+      "old", "年轻的", "他的", "him", "bright"
+    ];
+    let words = [...defaultWords];
+    let poisons = [];
+    let tempSelectedPoisons = [];
+    function initGame() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      const count = parseInt(document.getElementById('poisonCount').value);
+      if (poisons.length !== count) {
+        poisons = [];
+        while(poisons.length < count) {
+          let r = Math.floor(Math.random() * 15);
+          if(!poisons.includes(r)) poisons.push(r);
+        }
+      }
+      words.forEach((word, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const isPoison = poisons.includes(index);
+        card.innerHTML = `
+          <div class="card-number">${index + 1}</div>
+          <div class="card-front">${word}</div>
+          <div class="card-back ${isPoison ? 'poison' : 'safe'}">
+            <div style="font-size: 1.6rem">${isPoison ? '☠️' : '✨'}</div>
+            <div class="status-title">${isPoison ? 'POISON!' : 'SAFE!'}</div>
+            <div class="status-badge">${isPoison ? '踩毒药啦！' : '安全通过！'}</div>
+          </div>
+        `;
+        card.onclick = () => {
+          if(!card.classList.contains('flipped')) {
+            card.classList.add('flipped');
+          }
+        };
+        grid.appendChild(card);
+      });
+    }
+    function resetGame() {
+      poisons = [];
+      initGame();
+    }
+    function openWordModal() {
+      document.getElementById('wordInput').value = words.join('\n');
+      document.getElementById('wordModal').style.display = 'flex';
+    }
+    function saveWords() {
+      const input = document.getElementById('wordInput').value;
+      const list = input.split(/[\n,，]/).map(w => w.trim()).filter(w => w.length > 0);
+      if(list.length < 15) {
+        alert("请输入至少 15 个单词哦！");
+        return;
+      }
+      words = list.slice(0, 15);
+      closeModal('wordModal');
+      resetGame();
+    }
+    function openSetPoisonModal() {
+      const targetCount = parseInt(document.getElementById('poisonCount').value);
+      tempSelectedPoisons = [];
+      const container = document.getElementById('poisonSelector');
+      container.innerHTML = '';
+      for(let i = 0; i < 15; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'poison-btn';
+        btn.innerText = (i + 1) + '号';
+        btn.onclick = () => {
+          if (tempSelectedPoisons.includes(i)) {
+            tempSelectedPoisons = tempSelectedPoisons.filter(item => item !== i);
+            btn.classList.remove('selected');
+          } else {
+            if (tempSelectedPoisons.length < targetCount) {
+              tempSelectedPoisons.push(i);
+              btn.classList.add('selected');
+            } else {
+              alert(`只能选择 ${targetCount} 个毒药哦！`);
+            }
+          }
+        };
+        container.appendChild(btn);
+      }
+      document.getElementById('poisonModal').style.display = 'flex';
+    }
+    function confirmCustomPoison() {
+      const targetCount = parseInt(document.getElementById('poisonCount').value);
+      if (tempSelectedPoisons.length < targetCount) {
+        alert(`请选满 ${targetCount} 个毒药号码！`);
+        return;
+      }
+      poisons = [...tempSelectedPoisons];
+      closeModal('poisonModal');
+      initGame();
+    }
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+    initGame();
+  </script>
+</body>
+</html>
+

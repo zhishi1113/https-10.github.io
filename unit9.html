@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五年级英语单词消消乐 - 新单元</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            font-family: 'Comic Sans MS', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #333;
+            margin: 15px 0 5px 0;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+        }
+        .header {
+            display: flex;
+            gap: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 10px;
+        }
+        .board-container {
+            background: white;
+            padding: 12px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(6, 75px);
+            grid-template-rows: repeat(6, 75px);
+            gap: 6px;
+        }
+        .tile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+            transition: transform 0.15s, background-color 0.2s, box-shadow 0.2s;
+            word-break: break-all;
+            padding: 4px;
+            position: relative;
+        }
+        .tile:hover {
+            transform: scale(1.04);
+        }
+        .tile.selected {
+            border: 3px solid #ff4757;
+            transform: scale(0.95);
+        }
+        /* 5秒无操作提示动画：跳动+金光闪烁 */
+        .tile.hint {
+            animation: hintJump 0.8s infinite alternate ease-in-out;
+            border: 3px solid #ff9f43 !important;
+            box-shadow: 0 0 15px #ff9f43 !important;
+            z-index: 10;
+        }
+        @keyframes hintJump {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1) translateY(-5px); }
+        }
+
+        .tile.eliminating {
+            animation: popOut 0.3s forwards;
+        }
+        @keyframes popOut {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            padding: 10px 22px;
+            font-size: 16px;
+            font-weight: bold;
+            background: #ff6b81;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #ff4757;
+            transform: translateY(-2px);
+        }
+        .tips {
+            margin-top: 10px;
+            color: #555;
+            font-size: 14px;
+            max-width: 480px;
+            text-align: center;
+            line-height: 1.5;
+        }
+        #alert-box {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎈 单词消消乐 🎈</h1>
+    <div class="header">
+        <div>得分: <span id="score" style="color:#ff4757;">0</span></div>
+        <div>连消: <span id="combo" style="color:#2ed573;">0</span></div>
+    </div>
+
+    <div class="board-container">
+        <div id="grid"></div>
+        <div id="alert-box">没有可消除的，自动打乱重排...</div>
+    </div>
+
+    <div class="controls">
+        <button onclick="restartGame()">重新开始</button>
+        <button onclick="manualShuffle()">打乱重排</button>
+    </div>
+
+    <div class="tips">
+        💡 <b>提示</b>：点击两个相邻方块交换。横竖满3个<b>同款单词/中文</b>即可消除并听发音。<br>
+        ⏱️ <b>呆萌提示</b>：如果 <b>5秒</b> 没找到，方块会<b>跳动闪黄光</b>提醒你哦！
+    </div>
+
+    <script>
+        // 本单元新词库（13个单词）
+        const WORD_LIST = [
+            { id: 0, en: 'noisy', cn: '嘈杂的', color: '#ffcdd2' },
+            { id: 1, en: 'loudly', cn: '大声地', color: '#f8bbd0' },
+            { id: 2, en: 'noise', cn: '噪音', color: '#e1bee7' },
+            { id: 3, en: 'feel', cn: '感觉', color: '#d1c4e9' },
+            { id: 4, en: 'excited', cn: '激动的', color: '#c5cae9' },
+            { id: 5, en: 'proud', cn: '骄傲的', color: '#bbdefb' },
+            { id: 6, en: 'angry', cn: '生气的', color: '#b2ebf2' },
+            { id: 7, en: 'sad', cn: '悲伤的', color: '#b2dfdb' },
+            { id: 8, en: 'shy', cn: '害羞的', color: '#c8e6c9' },
+            { id: 9, en: 'win', cn: '赢得', color: '#fff9c4' },
+            { id: 10, en: 'stand', cn: '站立', color: '#ffe0b2' },
+            { id: 11, en: 'front', cn: '前面', color: '#d7ccc8' },
+            { id: 12, en: 'cup', cn: '奖杯/茶杯', color: '#cfd8dc' }
+        ];
+
+        const WIDTH = 6;
+        const HEIGHT = 6;
+        let grid = [];
+        let score = 0;
+        let selectedTile = null;
+        let isProcessing = false;
+        let idleTimer = null;
+        let currentHints = [];
+
+        function getRandomTile() {
+            const word = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+            const isEnglish = Math.random() > 0.5;
+            return {
+                id: word.id,
+                text: isEnglish ? word.en : word.cn,
+                color: word.color,
+                en: word.en
+            };
+        }
+
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            clearHints();
+            if (!isProcessing) {
+                idleTimer = setTimeout(showHint, 5000);
+            }
+        }
+
+        function clearHints() {
+            currentHints.forEach(pos => {
+                const idx = pos.r * WIDTH + pos.c;
+                const el = document.getElementById('grid').children[idx];
+                if (el) el.classList.remove('hint');
+            });
+            currentHints = [];
+        }
+
+        function showHint() {
+            const move = findPossibleMove();
+            if (move) {
+                currentHints = [move.from, move.to];
+                currentHints.forEach(pos => {
+                    const idx = pos.r * WIDTH + pos.c;
+                    const el = document.getElementById('grid').children[idx];
+                    if (el) el.classList.add('hint');
+                });
+            }
+        }
+
+        function findPossibleMove() {
+            for (let r = 0; r < HEIGHT; r++) {
+                for (let c = 0; c < WIDTH - 1; c++) {
+                    swapTiles(r, c, r, c + 1);
+                    const matches = checkMatches();
+                    swapTiles(r, c, r, c + 1);
+                    if (matches.length > 0) {
+                        return { from: { r, c }, to: { r, c: c + 1 } };
+                    }
+                }
+            }
+            for (let c = 0; c < WIDTH; c++) {
+                for (let r = 0; r < HEIGHT - 1; r++) {
+                    swapTiles(r, c, r + 1, c);
+                    const matches = checkMatches();
+                    swapTiles(r, c, r + 1, c);
+                    if (matches.length > 0) {
+                        return { from: { r, c }, to: { r: r + 1, c } };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function initGrid() {
+            clearTimeout(idleTimer);
+            clearHints();
+
+            let attempts = 0;
+            while (attempts < 100) {
+                attempts++;
+                for (let r = 0; r < HEIGHT; r++) {
+                    grid[r] = [];
+                    for (let c = 0; c < WIDTH; c++) {
+                        grid[r][c] = getRandomTile();
+                    }
+                }
+
+                while (checkMatches().length > 0) {
+                    for (let r = 0; r < HEIGHT; r++) {
+                        for (let c = 0; c < WIDTH; c++) {
+                            grid[r][c] = getRandomTile();
+                        }
+                    }
+                }
+
+                if (findPossibleMove() !== null) {
+                    break;
+                }
+            }
+
+            renderGrid();
+            resetIdleTimer();
+        }
+
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+            for (let r = 0; r < HEIGHT; r++) {
+                for (let c = 0; c < WIDTH; c++) {
+                    const tile = grid[r][c];
+                    const div = document.createElement('div');
+                    div.className = 'tile';
+                    div.style.backgroundColor = tile ? tile.color : '#fff';
+                    div.innerText = tile ? tile.text : '';
+                    div.onclick = () => onTileClick(r, c);
+                    gridEl.appendChild(div);
+                }
+            }
+        }
+
+        async function onTileClick(r, c) {
+            if (isProcessing) return;
+            resetIdleTimer();
+
+            if (!selectedTile) {
+                selectedTile = { r, c };
+                highlightTile(r, c, true);
+            } else {
+                const r1 = selectedTile.r;
+                const c1 = selectedTile.c;
+                highlightTile(r1, c1, false);
+
+                const isAdjacent = (Math.abs(r - r1) === 1 && c === c1) || (Math.abs(c - c1) === 1 && r === r1);
+
+                if (isAdjacent) {
+                    isProcessing = true;
+                    clearTimeout(idleTimer);
+
+                    swapTiles(r1, c1, r, c);
+                    renderGrid();
+
+                    let matches = checkMatches();
+                    if (matches.length > 0) {
+                        await processMatches();
+                    } else {
+                        await delay(250);
+                        swapTiles(r1, c1, r, c);
+                        renderGrid();
+                    }
+                    isProcessing = false;
+                    checkDeadlockAndResetTimer();
+                }
+                selectedTile = null;
+            }
+        }
+
+        async function checkDeadlockAndResetTimer() {
+            if (!findPossibleMove()) {
+                const alertBox = document.getElementById('alert-box');
+                alertBox.style.display = 'block';
+                await delay(1200);
+                alertBox.style.display = 'none';
+                initGrid();
+            } else {
+                resetIdleTimer();
+            }
+        }
+
+        function highlightTile(r, c, isSelected) {
+            const index = r * WIDTH + c;
+            const el = document.getElementById('grid').children[index];
+            if (el) {
+                if (isSelected) el.classList.add('selected');
+                else el.classList.remove('selected');
+            }
+        }
+
+        function swapTiles(r1, c1, r2, c2) {
+            const temp = grid[r1][c1];
+            grid[r1][c1] = grid[r2][c2];
+            grid[r2][c2] = temp;
+        }
+
+        function checkMatches() {
+            let matchedCoords = new Set();
+
+            for (let r = 0; r < HEIGHT; r++) {
+                for (let c = 0; c < WIDTH - 2; c++) {
+                    const t1 = grid[r][c];
+                    const t2 = grid[r][c+1];
+                    const t3 = grid[r][c+2];
+                    if (t1 && t2 && t3 && t1.id === t2.id && t2.id === t3.id) {
+                        matchedCoords.add(`${r},${c}`);
+                        matchedCoords.add(`${r},${c+1}`);
+                        matchedCoords.add(`${r},${c+2}`);
+                    }
+                }
+            }
+
+            for (let c = 0; c < WIDTH; c++) {
+                for (let r = 0; r < HEIGHT - 2; r++) {
+                    const t1 = grid[r][c];
+                    const t2 = grid[r+1][c];
+                    const t3 = grid[r+2][c];
+                    if (t1 && t2 && t3 && t1.id === t2.id && t2.id === t3.id) {
+                        matchedCoords.add(`${r},${c}`);
+                        matchedCoords.add(`${r+1},${c}`);
+                        matchedCoords.add(`${r+2},${c}`);
+                    }
+                }
+            }
+
+            return Array.from(matchedCoords).map(coord => {
+                const [r, c] = coord.split(',').map(Number);
+                return { r, c, tile: grid[r][c] };
+            });
+        }
+
+        async function processMatches() {
+            let comboCount = 0;
+            while (true) {
+                const matches = checkMatches();
+                if (matches.length === 0) break;
+
+                comboCount++;
+                document.getElementById('combo').innerText = comboCount;
+
+                speakWord(matches[0].tile.en);
+
+                matches.forEach(m => {
+                    const idx = m.r * WIDTH + m.c;
+                    const el = document.getElementById('grid').children[idx];
+                    if (el) el.classList.add('eliminating');
+                });
+
+                await delay(300);
+
+                score += matches.length * 10 * comboCount;
+                document.getElementById('score').innerText = score;
+
+                matches.forEach(m => {
+                    grid[m.r][m.c] = null;
+                });
+
+                for (let c = 0; c < WIDTH; c++) {
+                    let emptyRow = HEIGHT - 1;
+                    for (let r = HEIGHT - 1; r >= 0; r--) {
+                        if (grid[r][c] !== null) {
+                            if (emptyRow !== r) {
+                                grid[emptyRow][c] = grid[r][c];
+                                grid[r][c] = null;
+                            }
+                            emptyRow--;
+                        }
+                    }
+                    for (let r = emptyRow; r >= 0; r--) {
+                        grid[r][c] = getRandomTile();
+                    }
+                }
+
+                renderGrid();
+                await delay(250);
+            }
+            document.getElementById('combo').innerText = 0;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function manualShuffle() {
+            if (isProcessing) return;
+            initGrid();
+        }
+
+        function restartGame() {
+            score = 0;
+            document.getElementById('score').innerText = 0;
+            document.getElementById('combo').innerText = 0;
+            initGrid();
+        }
+
+        window.onload = initGrid;
+    </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>五年级英语 - 课前复习定时炸弹 (春节篇)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', 'Chalkboard SE', 'PingFang SC', sans-serif; }
+    body { background: linear-gradient(135deg, #1e0c24, #3a1c40, #120817); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 15px; color: #fff; }
+    header { text-align: center; margin-bottom: 12px; }
+    h1 { font-size: 2.2rem; color: #ff4757; text-shadow: 0 0 15px rgba(255, 71, 87, 0.6); display: flex; align-items: center; justify-content: center; gap: 10px; }
+    p.subtitle { font-size: 0.9rem; color: #ced6e0; margin-top: 4px; }
+    .controls { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); padding: 12px 20px; border-radius: 16px; width: 100%; max-width: 850px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    .status-group { display: flex; gap: 18px; font-size: 1rem; font-weight: bold; color: #eccc68; }
+    .status-item { display: flex; align-items: center; gap: 6px; }
+    .btn { border: none; padding: 8px 18px; font-size: 0.95rem; font-weight: bold; border-radius: 20px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px; }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .btn-green { background: #2ed573; color: #1e0c24; }
+    .btn-blue { background: #1e90ff; color: #fff; }
+    .btn-red { background: #ff4757; color: #fff; }
+    .btn-orange { background: #ffa502; color: #1e0c24; }
+    .game-card { background: rgba(255, 255, 255, 0.05); border: 2.5px solid #ff4757; border-radius: 20px; padding: 25px; width: 100%; max-width: 850px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
+    
+    .timer-container { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; }
+    .bomb-icon { font-size: 4rem; transition: transform 0.3s; }
+    .bomb-icon.ticking { animation: pulseBomb 0.8s infinite alternate; }
+    .timer-display { font-size: 4.5rem; font-weight: 900; color: #ffa502; text-shadow: 0 0 20px rgba(255, 165, 2, 0.6); font-family: 'Courier New', monospace; min-width: 130px; text-align: center; }
+    .timer-display.danger { color: #ff4757; text-shadow: 0 0 25px rgba(255, 71, 87, 0.9); animation: shake 0.3s infinite; }
+    
+    .question-box { background: linear-gradient(145deg, #2f3542, #1e222e); border: 2px solid #70a1ff; border-radius: 16px; width: 100%; padding: 25px 20px; min-height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5); }
+    .q-type-badge { background: #70a1ff; color: #1e222e; font-size: 0.85rem; font-weight: 900; padding: 4px 12px; border-radius: 12px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .q-text { font-size: 1.8rem; font-weight: bold; color: #ffffff; line-height: 1.4; word-break: break-word; }
+    .q-sub { font-size: 1rem; color: #a4b0be; margin-top: 8px; }
+    
+    .action-buttons { display: flex; gap: 15px; width: 100%; justify-content: center; flex-wrap: wrap; }
+    
+    @keyframes pulseBomb { from { transform: scale(1); } to { transform: scale(1.15) rotate(5deg); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    @keyframes boomEffect { 0% { background: rgba(255,71,87,0.8); } 100% { background: rgba(255,255,255,0.05); } }
+    .game-card.exploded { animation: boomEffect 0.6s ease-out; border-color: #ff4757; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); }
+    .modal-content { background: #2f3542; padding: 25px; border-radius: 18px; width: 90%; max-width: 600px; color: white; border: 1px solid rgba(255,255,255,0.2); }
+    .modal-content h3 { color: #ffa502; margin-bottom: 10px; font-size: 1.2rem; }
+    textarea { width: 100%; height: 220px; margin: 12px 0; padding: 12px; border-radius: 10px; border: 1px solid #70a1ff; background: #1e222e; color: #fff; font-size: 0.95rem; font-family: monospace; line-height: 1.5; outline: none; }
+    .modal-tips { font-size: 0.8rem; color: #a4b0be; line-height: 1.4; }
+    .flex-end { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💣 课前回顾 · 极速定时炸弹 (春节篇) 💣</h1>
+    <p class="subtitle">大声回答迎新年！看谁能成功拆弹！</p>
+  </header>
+  <div class="controls">
+    <div class="status-group">
+      <div class="status-item">🚩 当前关卡: <span id="currentLevel" style="color:#70a1ff">1</span> / <span id="totalLevels">18</span></div>
+      <div class="status-item">⏱️ 倒计时: 
+        <select id="timeSelect" style="background:#1e222e; color:#fff; border:1px solid #70a1ff; padding:2px 8px; border-radius:6px;" onchange="resetTimerSetting()">
+          <option value="15">15 秒 (极速招)</option>
+          <option value="20" selected>20 秒 (推荐)</option>
+          <option value="30">30 秒 (稳健)</option>
+        </select>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-blue" onclick="openModal()">✏️ 自定义题库</button>
+      <button class="btn btn-orange" onclick="resetGame()">🔄 从头开始</button>
+    </div>
+  </div>
+  <div class="game-card" id="gameCard">
+    <div class="timer-container">
+      <div class="bomb-icon" id="bombIcon">💣</div>
+      <div class="timer-display" id="timerDisplay">20</div>
+    </div>
+    <div class="question-box" id="qBox">
+      <div class="q-type-badge" id="qBadge">READY</div>
+      <div class="q-text" id="qText">点击下方“▶️ 启动炸弹”开始！</div>
+      <div class="q-sub" id="qSub">准备好快速抢答！</div>
+    </div>
+    <div class="action-buttons">
+      <button class="btn btn-green" style="font-size: 1.1rem; padding: 12px 28px;" id="startBtn" onclick="startTimer()">▶️ 启动炸弹 / 开始计时</button>
+      <button class="btn btn-blue" style="font-size: 1.1rem; padding: 12px 28px;" id="passBtn" onclick="passBomb()">✅ 读对拆弹！下一位 ➡️</button>
+      <button class="btn btn-red" style="padding: 12px 20px;" onclick="triggerBoom()">💥 判定爆炸 (扣分)</button>
+    </div>
+  </div>
+
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>✏️ 自定义关卡</h3>
+      <p class="modal-tips">格式：每行一题，例如：【节日抢答】the Spring Festival</p>
+      <textarea id="questionInput"></textarea>
+      <div class="flex-end">
+        <button class="btn btn-green" onclick="saveQuestions()">保存并开始</button>
+        <button class="btn" style="background:#a4b0be; color:#1e222e" onclick="closeModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 纯题目，彻底去除答案
+    let defaultQuestions = [
+      "【说出中文】the Spring Festival",
+      "【说出英文并拼写】灯笼",
+      "【短语翻译】reunion dinner",
+      "【朗读并翻译短语】Spring Festival Eve",
+      "【说出英文并拼写】鞭炮 / 爆竹",
+      "【文化短语翻译】lion dance",
+      "【短语翻译】red packet",
+      "【说出中文】fun",
+      "【说出英文并拼写】在……之前",
+      "【对应词抢答】before 的对应词/反义词是？",
+      "【说出英文并拼写】紧接着的 / 下一个",
+      "【短语翻译】next year",
+      "【填空并朗读】We watch the ______ dance at the Spring Festival.",
+      "【说出英文并拼写】团聚 / 团圆",
+      "【整句翻译】Children get red packets from parents.",
+      "【整句翻译】We have lots of fun!",
+      "【拼读抢答】请拼出单词：lantern",
+      "【整句翻译】We eat dumplings on Spring Festival Eve."
+    ];
+
+    let questions = [...defaultQuestions];
+    let currentIndex = 0;
+    let timeLeft = 20;
+    let timerId = null;
+    let isRunning = false;
+
+    function parseQuestion(rawText) {
+      let type = "REVIEW";
+      let mainText = rawText;
+      let typeMatch = rawText.match(/^【(.*?)】/);
+      if (typeMatch) {
+        type = typeMatch[1];
+        mainText = rawText.replace(/^【.*?】/, '').trim();
+      }
+      return { type, mainText };
+    }
+
+    function updateQuestionDisplay() {
+      if (currentIndex >= questions.length) {
+        document.getElementById('qBadge').innerText = "CLEAR";
+        document.getElementById('qText').innerText = "🎉 祝贺！春节主题通关大吉！";
+        document.getElementById('qSub').innerText = "全班表现满分！Happy Spring Festival!";
+        document.getElementById('bombIcon').innerText = "🧧";
+        stopTimer();
+        return;
+      }
+      document.getElementById('bombIcon').innerText = "💣";
+      let qData = parseQuestion(questions[currentIndex]);
+      document.getElementById('qBadge').innerText = qData.type;
+      document.getElementById('qText').innerText = qData.mainText;
+      document.getElementById('qSub').innerText = "📢 请大声、准确地说出你的答案！";
+      document.getElementById('currentLevel').innerText = currentIndex + 1;
+      document.getElementById('totalLevels').innerText = questions.length;
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+      isRunning = true;
+      const duration = parseInt(document.getElementById('timeSelect').value);
+      if (timeLeft <= 0 || timeLeft > duration) {
+        timeLeft = duration;
+      }
+      document.getElementById('bombIcon').classList.add('ticking');
+      document.getElementById('startBtn').style.opacity = '0.5';
+      timerId = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timerDisplay').innerText = timeLeft;
+        if (timeLeft <= 5 && timeLeft > 0) {
+          document.getElementById('timerDisplay').classList.add('danger');
+        }
+        if (timeLeft <= 0) {
+          triggerBoom();
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerId);
+      isRunning = false;
+      document.getElementById('bombIcon').classList.remove('ticking');
+      document.getElementById('timerDisplay').classList.remove('danger');
+      document.getElementById('startBtn').style.opacity = '1';
+    }
+
+    function passBomb() {
+      stopTimer();
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        let duration = parseInt(document.getElementById('timeSelect').value);
+        timeLeft = duration;
+        document.getElementById('timerDisplay').innerText = timeLeft;
+        updateQuestionDisplay();
+        startTimer();
+      } else {
+        updateQuestionDisplay();
+      }
+    }
+
+    function triggerBoom() {
+      stopTimer();
+      document.getElementById('timerDisplay').innerText = "00";
+      document.getElementById('qBadge').innerText = "BOOM!";
+      document.getElementById('qText').innerHTML = "<span style='color:#ff4757;'>💥 炸弹爆炸啦！(扣分)</span>";
+      document.getElementById('qSub').innerText = "时间到！下一位同学请准备拆除新炸弹！";
+      const card = document.getElementById('gameCard');
+      card.classList.add('exploded');
+      setTimeout(() => card.classList.remove('exploded'), 600);
+    }
+
+    function resetTimerSetting() {
+      stopTimer();
+      let duration = parseInt(document.getElementById('timeSelect').value);
+      timeLeft = duration;
+      document.getElementById('timerDisplay').innerText = timeLeft;
+    }
+
+    function resetGame() {
+      stopTimer();
+      currentIndex = 0;
+      resetTimerSetting();
+      updateQuestionDisplay();
+    }
+
+    function openModal() {
+      document.getElementById('questionInput').value = questions.join('\n');
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    function saveQuestions() {
+      let text = document.getElementById('questionInput').value;
+      let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length === 0) {
+        alert("请输入至少 1 个关卡哦！");
+        return;
+      }
+      questions = lines;
+      closeModal();
+      resetGame();
+    }
+
+    updateQuestionDisplay();
+  </script>
+</body>
+</html>

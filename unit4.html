@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五年级英语单词大挑战 - PK游戏 (示范版)</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #74ebd5, #ACB6E5); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        h1 { color: #2c3e50; text-shadow: 2px 2px 4px rgba(255,255,255,0.6); margin-bottom: 10px; font-size: 28px; }
+        
+        /* 记分板 */
+        .scoreboard { display: flex; gap: 15px; width: 100%; max-width: 950px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .team-card { background: white; border-radius: 12px; padding: 10px 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 210px; }
+        .team-card.t1 { border-top: 8px solid #ff4757; }
+        .team-card.t2 { border-top: 8px solid #1e90ff; }
+        .team-card.t3 { border-top: 8px solid #2ed573; }
+        .team-card.t4 { border-top: 8px solid #ffa502; }
+        .score { font-size: 34px; font-weight: bold; margin: 5px 0; color: #333; }
+        .btn-score { padding: 5px 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin: 0 4px; }
+        .btn-plus { background: #2ed573; color: white; }
+        .btn-minus { background: #ff4757; color: white; }
+
+        /* 主游戏展示区 */
+        .game-area { background: white; border-radius: 20px; width: 100%; max-width: 950px; padding: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); text-align: center; }
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: bold; }
+        .pool-count { color: #57606f; font-size: 16px; }
+        .timer-box { font-size: 26px; color: #ff4757; font-weight: bold; }
+        
+        .card-type { display: inline-block; padding: 6px 18px; background: #ffeaa7; color: #d35400; font-weight: bold; font-size: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #fdcb6e; }
+        
+        .question-box { min-height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 2px solid #e9ecef; }
+        .question-text { font-size: 32px; font-weight: bold; color: #2f3542; margin-bottom: 12px; line-height: 1.3; }
+        .hint-text { font-size: 18px; color: #747d8c; }
+
+        .answer-box { min-height: 80px; border: 3px dashed #70a1ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; color: #0984e3; margin-bottom: 20px; background: #f1f2f6; }
+        
+        /* 控制按钮 */
+        .control-btns { display: flex; gap: 20px; justify-content: center; }
+        .btn-main { padding: 14px 35px; font-size: 20px; font-weight: bold; border: none; border-radius: 30px; cursor: pointer; transition: 0.15s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-main:active { transform: scale(0.96); }
+        .btn-draw { background: #3742fa; color: white; }
+        .btn-show { background: #ffa502; color: white; }
+    </style>
+</head>
+<body>
+
+    <h1>🏆 五年级英语词汇 PK 争霸赛</h1>
+
+    <!-- 记分板 -->
+    <div class="scoreboard">
+        <div class="team-card t1">
+            <div>🔴 第一组 (Group 1)</div>
+            <div class="score" id="score1">0</div>
+            <button class="btn-score btn-plus" onclick="changeScore(1, 10)">+10</button>
+            <button class="btn-score btn-minus" onclick="changeScore(1, -10)">-10</button>
+        </div>
+        <div class="team-card t2">
+            <div>🔵 第二组 (Group 2)</div>
+            <div class="score" id="score2">0</div>
+            <button class="btn-score btn-plus" onclick="changeScore(2, 10)">+10</button>
+            <button class="btn-score btn-minus" onclick="changeScore(2, -10)">-10</button>
+        </div>
+        <div class="team-card t3">
+            <div>🟢 第三组 (Group 3)</div>
+            <div class="score" id="score3">0</div>
+            <button class="btn-score btn-plus" onclick="changeScore(3, 10)">+10</button>
+            <button class="btn-score btn-minus" onclick="changeScore(3, -10)">-10</button>
+        </div>
+        <div class="team-card t4">
+            <div>🟡 第四组 (Group 4)</div>
+            <div class="score" id="score4">0</div>
+            <button class="btn-score btn-plus" onclick="changeScore(4, 10)">+10</button>
+            <button class="btn-score btn-minus" onclick="changeScore(4, -10)">-10</button>
+        </div>
+    </div>
+
+    <!-- 游戏主区 -->
+    <div class="game-area">
+        <div class="status-bar">
+            <span class="pool-count" id="poolCount">题库剩余: -- 道题</span>
+            <div class="timer-box" id="timer">倒计时: 15 秒</div>
+        </div>
+
+        <div class="card-type" id="cardType">🎲 准备开始！请点击下方抽取挑战</div>
+
+        <div class="question-box">
+            <div class="question-text" id="qText">Ready? Click "抽取挑战"!</div>
+            <div class="hint-text" id="hText">点击后全组准备作答</div>
+        </div>
+
+        <div class="answer-box" id="aBox">❓ 答案将在这里揭晓</div>
+
+        <div class="control-btns">
+            <button class="btn-main btn-draw" onclick="drawQuestion()">🎲 抽取挑战</button>
+            <button class="btn-main btn-show" onclick="showAnswer()">👁️ 揭晓答案</button>
+        </div>
+    </div>
+
+    <script>
+        const rawQuestions = [
+            // eraser
+            { type: "【中文速答】说出英文并拼写", word: "eraser", q: "橡皮擦 / 黑板擦", hint: "以 e 开头，共 6 个字母" },
+            { type: "【字母重组题】拼出正确单词", word: "eraser", q: "r - s - e - a - e - r", hint: "提示：擦掉错误用它" },
+            { type: "【情境填空题】", word: "eraser", q: "I made a pencil mistake. Can I use your ______?", hint: "提示：文具" },
+            { type: "【动作/猜词题】", word: "eraser", q: "【肢体表演】请一位同学表演用它擦黑板/擦本子", hint: "其余组员大声抢答" },
+
+            // dictionary
+            { type: "【中文速答】说出英文并拼写", word: "dictionary", q: "字典 / 词典", hint: "以 d 开头，较长的单词" },
+            { type: "【字母填空题】补充缺失字母", word: "dictionary", q: "d _ c t _ o n a r y", hint: "缺了两个相同的元音字母" },
+            { type: "【英文谜题/猜猜看】", word: "dictionary", q: "It is a thick book. It helps us learn new words. What is it?", hint: "提示：是一本书" },
+            { type: "【情境填空题】", word: "dictionary", q: "If you don't know the new word, look it up in the ______.", hint: "查阅工具书" },
+
+            // borrow
+            { type: "【中文速答】说出英文并拼写", word: "borrow", q: "借用 / 借入", hint: "以 b 开头，含双写 r" },
+            { type: "【常用句型表达】", word: "borrow", q: "May I ______ your ruler? (我可以借用你的尺子吗？)", hint: "选词填空" },
+            { type: "【情境辨析题】", word: "borrow", q: "“向别人借东西”用哪个动词？", hint: "borrow 还是 buy？" },
+            { type: "【字母填空题】补充缺失字母", word: "borrow", q: "b o _ _ o w", hint: "提示：填入两个连续相同的辅音字母" },
+
+            // glue
+            { type: "【中文速答】说出英文并拼写", word: "glue", q: "胶水 / 黏合", hint: "以 g 开头，4 个字母" },
+            { type: "【动作/你画我猜】", word: "glue", q: "【肢体表演】表演往纸上涂抹液体并把两张纸粘在一起", hint: "组员大声说出该英文" },
+            { type: "【情境填空题】", word: "glue", q: "We need some ______ to stick the pictures on the paper.", hint: "黏贴美术作品需要" },
+            { type: "【字母重组题】拼出正确单词", word: "glue", q: "u - l - g - e", hint: "提示：手工课常用" },
+
+            // notebook
+            { type: "【中文速答】说出英文并拼写", word: "notebook", q: "笔记本", hint: "合成词：note + book" },
+            { type: "【看图/常识题】", word: "notebook", q: "我们在上面记笔记、写日记的小册子是：", hint: "以 n 开头的复合词" },
+            { type: "【情境填空题】", word: "notebook", q: "Open your ______ and write down the important points.", hint: "选词填空" },
+            { type: "【拆词速记】", word: "notebook", q: "“note(笔记)”加上哪个词等于“笔记本”？请拼出整个单词！", hint: "整体由8个字母组成" },
+
+            // blackboard
+            { type: "【中文速答】说出英文并拼写", word: "blackboard", q: "黑板", hint: "合成词：black + board" },
+            { type: "【字母填空题】补充缺失字母", word: "blackboard", q: "b l a c k _ _ a r d", hint: "缺了两个元音字母" },
+            { type: "【情境填空题】", word: "blackboard", q: "Look at the ______ and listen to the teacher carefully.", hint: "教室前方最重要的设备" },
+            { type: "【常识观察题】", word: "blackboard", q: "Teacher writes on it with chalk(粉笔). What is it?", hint: "它是什么？" },
+
+            // work
+            { type: "【中文速答】说出英文并拼写", word: "work", q: "工作 / 运转 / 劳动", hint: "4个字母，w开头" },
+            { type: "【情境填空题】", word: "work", q: "My father goes to ______ by bus every morning.", hint: "去上班 (go to ______)" },
+            { type: "【动作/表演题】", word: "work", q: "【肢体表演】表演一个“正在非常辛苦搬砖/敲键盘工作”的人", hint: "全组齐声大喊出单词" },
+            { type: "【情境理解题】", word: "work", q: "Hard ______ makes good dreams come true. (辛勤工作/努力)", hint: "选词填空" },
+
+            // worry
+            { type: "【中文速答】说出英文并拼写", word: "worry", q: "担心 / 担忧", hint: "以 w 开头，双写 r" },
+            { type: "【常用交际口语】", word: "worry", q: "Don't ______! Be happy! (别担心，开心点！)", hint: "选词填空" },
+            { type: "【表情表演题】", word: "worry", q: "【微表情表演】请全组做出一个极度“担忧、发愁、皱眉”的表情", hint: "并大声拼出单词" },
+            { type: "【字母重组题】拼出正确单词", word: "worry", q: "r - r - o - w - y", hint: "双写字母是哪一个？" },
+
+            // ask
+            { type: "【中文速答】说出英文并拼写", word: "ask", q: "询问 / 提问 / 邀请", hint: "只有 3 个字母" },
+            { type: "【常用交际口语】", word: "ask", q: "Can I ______ you a question? (我可以问你一个问题吗？)", hint: "以 a 开头的动词" },
+            { type: "【情境填空题】", word: "ask", q: "If you don't understand, please ______ for help.", hint: "寻求帮助 (______ for help)" },
+            { type: "【动作/互动题】", word: "ask", q: "【动作题】请全组同学立刻举手，模仿向老师“提问”的动作", hint: "同时拼出该词" }
+        ];
+
+        let availableQuestions = [...rawQuestions];
+        let currentQuestion = null;
+        let countdown = 15;
+        let timerId = null;
+
+        function updatePoolDisplay() {
+            document.getElementById("poolCount").innerText = `题库剩余: ${availableQuestions.length} 道题`;
+        }
+        updatePoolDisplay();
+
+        let scores = [0, 0, 0, 0];
+        function changeScore(teamIndex, delta) {
+            scores[teamIndex - 1] += delta;
+            if(scores[teamIndex - 1] < 0) scores[teamIndex - 1] = 0;
+            document.getElementById(`score${teamIndex}`).innerText = scores[teamIndex - 1];
+        }
+
+        // 语音朗读函数
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function drawQuestion() {
+            clearInterval(timerId);
+
+            if(availableQuestions.length === 0) {
+                alert("太棒了！所有题目都已挑战完毕，题库已自动重置！");
+                availableQuestions = [...rawQuestions];
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            currentQuestion = availableQuestions.splice(randomIndex, 1)[0];
+            updatePoolDisplay();
+
+            document.getElementById("cardType").innerText = currentQuestion.type;
+            document.getElementById("qText").innerText = currentQuestion.q;
+            document.getElementById("hText").innerText = "提示: " + currentQuestion.hint;
+            document.getElementById("aBox").innerText = "❓ 等待揭晓...";
+            document.getElementById("aBox").style.color = "#70a1ff";
+
+            countdown = 15;
+            document.getElementById("timer").innerText = `倒计时: ${countdown} 秒`;
+            timerId = setInterval(() => {
+                countdown--;
+                if(countdown >= 0) {
+                    document.getElementById("timer").innerText = `倒计时: ${countdown} 秒`;
+                } else {
+                    clearInterval(timerId);
+                    document.getElementById("timer").innerText = `⏰ 时间到！`;
+                }
+            }, 1000);
+        }
+
+        function showAnswer() {
+            if(!currentQuestion) return;
+            clearInterval(timerId);
+            document.getElementById("aBox").innerText = "🎯 " + currentQuestion.word;
+            document.getElementById("aBox").style.color = "#2ed573";
+            // 揭晓答案时发音
+            speakWord(currentQuestion.word);
+        }
+    </script>
+</body>
+</html>
